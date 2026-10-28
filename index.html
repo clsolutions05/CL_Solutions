@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth dark" x-data="appState()"
+      :class="{ 'accessibility-light': lightMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CL SOLUTIONS - Sistemas, Innovación y Soporte Técnico</title>
+    
+    <!-- Fuentes de marca: Inter para texto, Montserrat para títulos y JetBrains Mono para datos técnicos. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS aporta clases utilitarias; los estilos propios mantienen una base visual si el CDN no carga. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (window.tailwind) {
+            window.tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Inter', 'sans-serif'],
+                            heading: ['Montserrat', 'sans-serif'],
+                            mono: ['JetBrains Mono', 'monospace'],
+                        },
+                        colors: {
+                            cl: {
+                                bg: '#102A43',
+                                dark: '#0B1F33',
+                                card: '#19354F',
+                                accent: '#36566F',
+                                steel: '#9AABBA',
+                                glow: '#D5DDE5',
+                                silver: '#E7EDF2',
+                                white: '#FFFFFF',
+                            }
+                        },
+                        animation: {
+                            'pulse-slow': 'pulse 5s ease-in-out infinite',
+                            'float-1': 'float 6s ease-in-out infinite',
+                            'float-2': 'float 7s ease-in-out 1.5s infinite',
+                            'float-3': 'float 5s ease-in-out 3s infinite',
+                            'circuit-glow': 'circuit 3s ease-in-out infinite alternate',
+                        },
+                        keyframes: {
+                            float: {
+                                '0%, 100%': { transform: 'translateY(0)' },
+                                '50%': { transform: 'translateY(-10px)' }
+                            },
+                            circuit: {
+                                '0%': { opacity: '0.55', filter: 'drop-shadow(0 0 2px #D5DDE5)' },
+                                '100%': { opacity: '1', filter: 'drop-shadow(0 0 5px #D5DDE5)' }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    </script>
+
+    <!-- Swiper crea el carrusel adaptable de testimonios y sus controles de paginación. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- Lucide convierte los atributos data-lucide de la página en iconos SVG. -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- GSAP anima la entrada del hero y los indicadores; ScrollTrigger inicia contadores al llegar a pantalla. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Alpine.js gestiona el menú móvil, filtros, formularios, modales y accesibilidad mediante atributos x-. -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        /* Variables centrales de la paleta, bordes y sombras de la marca; cambiar aquí actualiza el tema base. */
+        :root {
+            --cl-bg: #102A43;
+            --cl-dark: #0B1F33;
+            --cl-card: #19354F;
+            --cl-accent: #36566F;
+            --cl-steel: #9AABBA;
+            --cl-glow: #D5DDE5;
+            --cl-silver: #E7EDF2;
+            --cl-white: #FFFFFF;
+            --cl-border: rgba(213, 221, 229, 0.18);
+            --cl-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+            --cl-radius: 16px;
+        }
+
+        /* Base tipográfica, desplazamiento suave y reglas globales para controles e interacción. */
+        html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+        body {
+            background-color: var(--cl-bg);
+            color: var(--cl-silver);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.025em;
+        }
+        button, input, textarea, select { font: inherit; }
+        button, a { -webkit-tap-highlight-color: transparent; }
+        a { transition: color .25s ease, border-color .25s ease; }
+        ::selection { background: var(--cl-steel); color: var(--cl-dark); }
+
+        /* Personaliza la barra de desplazamiento en navegadores compatibles con WebKit. */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--cl-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: #526B80;
+            border-radius: 10px;
+            border: 2px solid var(--cl-dark);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--cl-steel); }
+
+        /* Componentes visuales reutilizables: panel translúcido, tarjetas y vistas previas del portafolio. */
+        .glass-panel {
+            background: rgba(11, 31, 51, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--cl-border);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        }
+        .glass-card {
+            background: rgba(25, 53, 79, 0.76);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(213, 221, 229, 0.12);
+            border-radius: var(--cl-radius);
+            transition: background .3s ease, border-color .3s ease,
+                        box-shadow .3s ease, transform .3s ease;
+        }
+        .glass-card:hover {
+            background: rgba(36, 62, 84, 0.94);
+            border-color: rgba(213, 221, 229, 0.35);
+            box-shadow: var(--cl-shadow);
+        }
+        .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .products-cta {
+            margin-top: 3.5rem;
+        }
+        .site-footer {
+            margin-top: 0;
+            padding-top: 4rem;
+        }
+        .portfolio-filter {
+            border: 1px solid rgba(213, 221, 229, .2);
+            background: var(--cl-dark);
+            color: var(--cl-silver);
+        }
+        .portfolio-filter[aria-pressed="true"] {
+            border-color: var(--cl-glow);
+            background: var(--cl-accent);
+            color: var(--cl-white);
+        }
+        .portfolio-filter:hover {
+            border-color: rgba(213, 221, 229, .55);
+            color: var(--cl-white);
+        }
+        /* Navegación móvil: panel oscuro, enlaces amplios y acción destacada para tocar con facilidad. */
+        .mobile-navigation {
+            display: grid;
+            gap: .5rem;
+            padding: .75rem 1rem 1.25rem;
+            background: rgba(11, 31, 51, .97);
+            border-top: 1px solid rgba(213, 221, 229, .12);
+            border-bottom: 1px solid rgba(213, 221, 229, .2);
+            box-shadow: 0 16px 30px rgba(0, 0, 0, .28);
+        }
+        .mobile-navigation > a {
+            display: flex;
+            min-height: 2.75rem;
+            align-items: center;
+            padding: .7rem .9rem;
+            border: 1px solid transparent;
+            border-radius: .75rem;
+            color: #E7EDF2;
+            font-size: .95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+        }
+        .mobile-navigation > a:hover,
+        .mobile-navigation > a:focus-visible {
+            background: rgba(213, 221, 229, .1);
+            border-color: rgba(213, 221, 229, .25);
+            color: #FFFFFF;
+        }
+        .mobile-navigation > a.mobile-navigation-cta {
+            justify-content: center;
+            margin-top: .35rem;
+            background: var(--cl-accent);
+            border-color: rgba(213, 221, 229, .3);
+            color: #FFFFFF;
+        }
+        .mobile-navigation > a.mobile-navigation-cta:hover,
+        .mobile-navigation > a.mobile-navigation-cta:focus-visible {
+            background: #526B80;
+            border-color: var(--cl-glow);
+        }
+        /* Botón hamburguesa con icono CSS propio para conservar su diseño aunque falle la librería de iconos. */
+        .mobile-menu-toggle {
+            display: inline-flex;
+            width: 2.75rem;
+            height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 1px solid rgba(213, 221, 229, .35);
+            border-radius: .75rem;
+            background: #19354F;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+            cursor: pointer;
+            transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+        }
+        .mobile-menu-toggle:hover {
+            background: #36566F;
+            border-color: var(--cl-glow);
+        }
+        .mobile-menu-toggle:active { transform: scale(.96); }
+        .mobile-menu-toggle:focus-visible {
+            outline: 3px solid var(--cl-glow);
+            outline-offset: 3px;
+        }
+        .mobile-menu-toggle svg,
+        .mobile-menu-toggle i {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #FFFFFF;
+            stroke: currentColor;
+        }
+        .mobile-menu-toggle .menu-fallback-icon {
+            display: grid;
+            gap: 4px;
+            width: 1.35rem;
+        }
+        .mobile-menu-toggle .menu-fallback-icon span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            border-radius: 2px;
+            background: currentColor;
+        }
+        @media (min-width: 768px) {
+            .mobile-navigation { display: none !important; }
+        }
+        @media (min-width: 1024px) {
+            .footer-services { padding-left: 1.5rem; }
+        }
+        /* Botón de cierre visible y consistente para el diálogo de detalles del proyecto. */
+        .modal-close {
+            display: inline-flex;
+            width: 2.5rem;
+            height: 2.5rem;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(213, 221, 229, .3);
+            border-radius: 9999px;
+            background: rgba(11, 31, 51, .9);
+            color: #FFFFFF;
+            font-size: 1.5rem;
+            line-height: 1;
+            transition: background .2s ease, border-color .2s ease;
+        }
+        .modal-close:hover {
+            background: var(--cl-accent);
+            border-color: var(--cl-glow);
+        }
+        /* Enlace oculto hasta recibir foco: permite saltar la navegación y llegar al contenido principal. */
+        .skip-link {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 100;
+            padding: .75rem 1rem;
+            transform: translateY(-200%);
+            border-radius: .75rem;
+            background: var(--cl-white);
+            color: var(--cl-dark);
+            font-weight: 700;
+        }
+        .skip-link:focus { transform: translateY(0); }
+        /* Widget flotante, controles y tema de alto contraste para las herramientas de accesibilidad. */
+        .accessibility-tools {
+            position: fixed;
+            right: 1rem;
+            bottom: calc(1rem + 4cm);
+            z-index: 60;
+            display: grid;
+            justify-items: end;
+            gap: .75rem;
+        }
+        .accessibility-trigger {
+            display: inline-flex;
+            min-height: 3rem;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .75rem 1rem;
+            border: 1px solid rgba(213, 221, 229, .55);
+            border-radius: 9999px;
+            background: #19354F;
+            color: #FFFFFF;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+        }
+        .accessibility-panel {
+            width: min(21rem, calc(100vw - 2rem));
+            padding: 1.25rem;
+            border: 1px solid var(--cl-border);
+            border-radius: 1rem;
+            background: #0B1F33;
+            color: #E7EDF2;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, .35);
+        }
+        .accessibility-panel h2 {
+            margin: 0 0 1rem;
+            font-size: 1.1rem;
+            color: #FFFFFF;
+        }
+        .accessibility-action {
+            width: 100%;
+            min-height: 2.75rem;
+            padding: .65rem .8rem;
+            border: 1px solid rgba(213, 221, 229, .25);
+            border-radius: .65rem;
+            background: #19354F;
+            color: #FFFFFF;
+            text-align: left;
+            font-weight: 600;
+        }
+        .accessibility-action:hover {
+            background: #36566F;
+            border-color: var(--cl-glow);
+        }
+        .accessibility-status {
+            margin: .75rem 0 0;
+            color: #D5DDE5;
+            font-size: .8rem;
+        }
+        html.accessibility-light {
+            --cl-bg: #F1F5F9;
+            --cl-dark: #E2E8F0;
+            --cl-card: #FFFFFF;
+            --cl-accent: #36566F;
+            --cl-steel: #526B80;
+            --cl-glow: #36566F;
+            --cl-silver: #1E293B;
+            --cl-white: #0B1F33;
+            --cl-border: rgba(15, 23, 42, .18);
+            background-color: var(--cl-bg);
+            color: #1E293B;
+        }
+        html.accessibility-light .glass-panel {
+            background: rgba(255, 255, 255, .94);
+            border-color: rgba(15, 23, 42, .16);
+        }
+        html.accessibility-light .glass-card {
+            background: rgba(255, 255, 255, .92);
+            border-color: rgba(15, 23, 42, .12);
+        }
+        html.accessibility-light .glass-card:hover { background: #FFFFFF; }
+        html.accessibility-light .text-white { color: #0B1F33; }
+        html.accessibility-light .text-slate-100 { color: #1E293B; }
+        html.accessibility-light .text-slate-200 { color: #334155; }
+        html.accessibility-light .text-slate-300 { color: #334155; }
+        html.accessibility-light .text-slate-400 { color: #475569; }
+        html.accessibility-light .text-slate-500 { color: #475569; }
+        html.accessibility-light .gradient-text {
+            background-image: linear-gradient(120deg, #0B1F33 0%, #36566F 100%);
+        }
+        html.accessibility-light .accessibility-panel {
+            background: #FFFFFF;
+            color: #1E293B;
+            border-color: rgba(15, 23, 42, .2);
+        }
+        html.accessibility-light .accessibility-panel h2 { color: #0B1F33; }
+        html.accessibility-light .accessibility-status { color: #334155; }
+        html.accessibility-light .portfolio-filter { background: #FFFFFF; }
+        html.accessibility-light .portfolio-filter[aria-pressed="true"] { color: #FFFFFF; }
+        @media (max-width: 480px) {
+            .accessibility-tools { right: .75rem; bottom: calc(.75rem + 4cm); }
+            .accessibility-trigger { min-height: 2.75rem; padding: .65rem .85rem; }
+        }
+        /* Limita el logo al espacio del encabezado y evita que estire la navegación. */
+        .brand-logo {
+            width: auto;
+            height: 64px;
+            max-width: 100px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        /* Tratamientos de marca para títulos, fondos y botones destacados. */
+        .gradient-text {
+            background: linear-gradient(120deg, #FFFFFF 0%, #D5DDE5 55%, #9AABBA 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--cl-white);
+        }
+        .bg-grid-circuit {
+            background-image: linear-gradient(rgba(213,221,229,.035) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(213,221,229,.035) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        header { transition: background-color .3s ease, box-shadow .3s ease; }
+        header nav a { letter-spacing: .045em; }
+        header nav a:hover { color: var(--cl-white); }
+
+        /* Botones corporativos y del formulario con contraste explícito entre texto y fondo. */
+        .btn-corporate {
+            background: linear-gradient(135deg, var(--cl-card), var(--cl-accent));
+            color: var(--cl-white);
+            border: 1px solid rgba(213,221,229,.35);
+            border-radius: 12px;
+            transition: all .25s ease;
+        }
+        .btn-corporate:hover {
+            background: linear-gradient(135deg, var(--cl-accent), #526B80);
+            border-color: var(--cl-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.2);
+        }
+        .contact-submit {
+            background: linear-gradient(135deg, #19354F, #244A68) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(213, 221, 229, .55) !important;
+        }
+        .contact-submit span,
+        .contact-submit i {
+            color: #FFFFFF !important;
+        }
+        .contact-submit:hover:not(:disabled) {
+            background: linear-gradient(135deg, #244A68, #36566F) !important;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .28);
+        }
+        .contact-submit:disabled {
+            background: #36566F !important;
+            color: #FFFFFF !important;
+        }
+        /* Anillo de foco visible para navegación con teclado y estilos base de los campos del formulario. */
+        button:focus-visible, a:focus-visible, input:focus-visible,
+        textarea:focus-visible, select:focus-visible {
+            outline: 2px solid var(--cl-glow);
+            outline-offset: 3px;
+        }
+        input, textarea, select {
+            background-color: var(--cl-dark);
+            color: var(--cl-white);
+            border: 1px solid #52677A;
+            border-radius: 10px;
+            transition: border-color .25s ease;
+        }
+        input::placeholder, textarea::placeholder { color: #A9B7C4; }
+        input:focus, textarea:focus, select:focus { border-color: var(--cl-glow); }
+        input:disabled, textarea:disabled, button:disabled { opacity: .6; cursor: not-allowed; }
+        #portafolio img { max-width: 100%; height: auto; object-fit: cover; }
+        #servicios, #portafolio, #nosotros, #contacto { scroll-margin-top: 100px; }
+
+        /* Apariencia de la paginación del carrusel de testimonios y ocultamiento inicial de contenido Alpine. */
+        .swiper-pagination-bullet { background: var(--cl-steel) !important; opacity: .65; }
+        .swiper-pagination-bullet-active {
+            background: var(--cl-white) !important;
+            width: 24px !important;
+            border-radius: 999px !important;
+            opacity: 1;
+        }
+        [x-cloak] { display: none !important; }
+
+        /* Utilidades CSS mínimas para conservar estructura, espaciado y tipografía si Tailwind no está disponible. */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; min-width: 320px; line-height: 1.6; }
+        a { color: inherit; text-decoration: none; }
+        img { display: block; max-width: 100%; }
+        button { color: inherit; cursor: pointer; }
+        h1, h2, h3, h4, p { margin-top: 0; }
+        h1, h2, h3, h4 { line-height: 1.15; }
+        p { line-height: 1.75; }
+        ul { padding-left: 0; list-style: none; }
+        section { scroll-margin-top: 6rem; }
+
+        .max-w-7xl { width: 100%; max-width: 80rem; }
+        .max-w-3xl { width: 100%; max-width: 48rem; }
+        .max-w-2xl { width: 100%; max-width: 42rem; }
+        .max-w-xl { width: 100%; max-width: 36rem; }
+        .max-w-md { width: 100%; max-width: 28rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .mt-1 { margin-top: .25rem; }
+        .mt-2 { margin-top: .5rem; }
+        .mt-3 { margin-top: .75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: .5rem; }
+        .mb-3 { margin-bottom: .75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .ml-auto { margin-left: auto; }
+        .block { display: block; }
+        .inline-flex { display: inline-flex; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .hidden { display: none; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-1 { flex: 1 1 0%; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-start { justify-content: flex-start; }
+        .gap-1 { gap: .25rem; }
+        .gap-1\.5 { gap: .375rem; }
+        .gap-2 { gap: .5rem; }
+        .gap-3 { gap: .75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        .gap-12 { gap: 3rem; }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: .5rem; }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: .75rem; }
+        .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+        .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem; }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 2rem; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .w-full { width: 100%; }
+        .w-20 { width: 3.5rem; }
+        .w-28 { width: 7rem; }
+        .w-14 { width: 3.5rem; }
+        .w-16 { width: 4rem; }
+        .w-12 { width: 3rem; }
+        .w-10 { width: 2.5rem; }
+        .h-auto { height: auto; }
+        .h-20 { height: 5rem; }
+        .min-h-\[3rem\] { min-height: 3rem; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .sticky { position: sticky; }
+        .inset-0 { inset: 0; }
+        .top-0 { top: 0; }
+        .z-0 { z-index: 0; }
+        .z-10 { z-index: 10; }
+        .z-20 { z-index: 20; }
+        .z-50 { z-index: 50; }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-x-hidden { overflow-x: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-xs { font-size: .75rem; line-height: 1.5; }
+        .text-\[9px\] { font-size: 9px; }
+        .text-\[10px\] { font-size: 10px; }
+        .text-\[11px\] { font-size: 11px; }
+        .text-sm { font-size: .875rem; line-height: 1.5; }
+        .text-base { font-size: 1rem; line-height: 1.7; }
+        .text-lg { font-size: 1.125rem; line-height: 1.6; }
+        .text-xl { font-size: 1.25rem; line-height: 1.4; }
+        .text-2xl { font-size: 1.5rem; line-height: 1.3; }
+        .text-3xl { font-size: 1.875rem; line-height: 1.2; }
+        .text-4xl { font-size: 2.25rem; line-height: 1.12; }
+        .text-5xl { font-size: 3rem; line-height: 1.08; }
+        .font-normal { font-weight: 400; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-extrabold { font-weight: 800; }
+        .uppercase { text-transform: uppercase; }
+        .italic { font-style: italic; }
+        .tracking-tight { letter-spacing: -.04em; }
+        .tracking-wide { letter-spacing: .04em; }
+        .tracking-wider { letter-spacing: .08em; }
+        .tracking-widest { letter-spacing: .14em; }
+        .leading-none { line-height: 1; }
+        .leading-tight { line-height: 1.12; }
+        .leading-relaxed { line-height: 1.75; }
+        .text-white { color: #fff; }
+        .text-slate-100 { color: #f1f5f9; }
+        .text-slate-200 { color: #e2e8f0; }
+        .text-slate-300 { color: #cbd5e1; }
+        .text-slate-400 { color: #a9b7c4; }
+        .text-slate-500 { color: #8193a3; }
+        .text-emerald-400 { color: #34d399; }
+        .text-amber-400 { color: #fbbf24; }
+        .text-cl-glow { color: var(--cl-glow); }
+        .text-cl-steel { color: var(--cl-steel); }
+        .text-cl-accent { color: var(--cl-accent); }
+        .bg-cl-bg { background-color: var(--cl-bg); }
+        .bg-cl-dark { background-color: var(--cl-dark); }
+        .bg-cl-card { background-color: var(--cl-card); }
+        .bg-cl-accent { background-color: var(--cl-accent); }
+        .bg-cl-steel { background-color: var(--cl-steel); }
+        .border { border: 1px solid var(--cl-border); }
+        .border-t { border-top: 1px solid var(--cl-border); }
+        .border-y { border-top: 1px solid var(--cl-border); border-bottom: 1px solid var(--cl-border); }
+        .border-white\/5 { border-color: rgba(255,255,255,.05); }
+        .border-white\/10 { border-color: rgba(255,255,255,.1); }
+        .rounded-lg { border-radius: .75rem; }
+        .rounded-xl { border-radius: 1rem; }
+        .rounded-2xl { border-radius: 1.25rem; }
+        .rounded-full { border-radius: 9999px; }
+        .p-2 { padding: .5rem; }
+        .p-3 { padding: .75rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .px-2 { padding-left: .5rem; padding-right: .5rem; }
+        .px-3 { padding-left: .75rem; padding-right: .75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .px-8 { padding-left: 2rem; padding-right: 2rem; }
+        .py-1 { padding-top: .25rem; padding-bottom: .25rem; }
+        .py-2 { padding-top: .5rem; padding-bottom: .5rem; }
+        .py-3 { padding-top: .75rem; padding-bottom: .75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+        .py-24 { padding-top: 6rem; padding-bottom: 6rem; }
+        .pt-2 { padding-top: .5rem; }
+        .pt-4 { padding-top: 1rem; }
+        .pt-6 { padding-top: 1.5rem; }
+        .pt-8 { padding-top: 2rem; }
+        .pt-12 { padding-top: 3rem; }
+        .pb-6 { padding-bottom: 1.5rem; }
+        .pb-8 { padding-bottom: 2rem; }
+        .pb-14 { padding-bottom: 3.5rem; }
+        .pb-20 { padding-bottom: 5rem; }
+        .shadow-lg { box-shadow: 0 10px 24px rgba(0,0,0,.2); }
+        .shadow-xl { box-shadow: 0 16px 34px rgba(0,0,0,.22); }
+        .shadow-2xl { box-shadow: 0 24px 48px rgba(0,0,0,.3); }
+        .opacity-30 { opacity: .3; }
+        .transition-all { transition: all .25s ease; }
+        .transition-colors { transition: color .25s ease, background-color .25s ease; }
+
+        /* Puntos de quiebre: ajustan rejillas, navegación y tipografía según el ancho de pantalla. */
+        @media (min-width: 640px) {
+            .sm\:w-16 { width: 4rem; }
+            .sm\:w-auto { width: auto; }
+            .sm\:flex-row { flex-direction: row; }
+            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sm\:text-sm { font-size: .875rem; }
+            .sm\:text-lg { font-size: 1.125rem; }
+            .sm\:text-xl { font-size: 1.25rem; }
+            .sm\:text-3xl { font-size: 1.875rem; }
+            .sm\:text-5xl { font-size: 3rem; }
+            .sm\:text-6xl { font-size: 3.75rem; }
+            .sm\:inline { display: inline; }
+            .sm\:w-4\/5 { width: 80%; }
+        }
+        @media (min-width: 768px) {
+            .md\:flex { display: flex; }
+            .md\:hidden { display: none; }
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .lg\:flex { display: flex; }
+            .lg\:hidden { display: none; }
+            .lg\:col-span-7 { grid-column: span 7 / span 7; }
+            .lg\:col-span-5 { grid-column: span 5 / span 5; }
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+            .lg\:text-left { text-align: left; }
+            .lg\:text-7xl { font-size: 4.5rem; }
+            .lg\:justify-start { justify-content: flex-start; }
+        }
+
+        /* Respeta la preferencia del sistema para reducir animaciones y transiciones. */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+        }
+        @media (max-width: 640px) {
+            :root { --cl-radius: 12px; }
+            .glass-card:hover { transform: none; }
+        }
+    </style>
+</head>
+<body class="bg-cl-bg text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-cl-steel selection:text-white">
+    <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
+
+    <!-- Luces decorativas y cuadrícula de fondo; aria-hidden las excluye de lectores de pantalla. -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-900/30 rounded-full blur-[128px] animate-pulse-slow"></div>
+        <div class="absolute top-1/3 -right-40 w-96 h-96 bg-cl-steel/15 rounded-full blur-[128px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+        <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-sky-500/10 rounded-full blur-[128px] animate-pulse-slow" style="animation-delay: 4s;"></div>
+        <div class="absolute inset-0 bg-grid-circuit opacity-30"></div>
+    </div>
+
+    <!-- Encabezado fijo con navegación de escritorio, menú móvil y acceso a cotizaciones. -->
+    <header class="sticky top-0 z-50 transition-all duration-300" 
+            :class="{ 'glass-panel shadow-2xl border-b border-white/10': scrolled, 'bg-transparent py-2': !scrolled }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Marca principal: la imagen incluye el nombre y el lema de la empresa. -->
+                <a href="#hero" class="flex items-center group" aria-label="CL Solutions, inicio">
+                    <img src="logo-cl-solutions.png" alt="CL Solutions: sistemas, innovación y soporte técnico" class="brand-logo rounded-md" style="background:#102A43;">
+                </a>
+
+                <!-- Enlaces de navegación visibles en tablet y escritorio. -->
+                <nav aria-label="Navegación principal" class="hidden md:flex items-center space-x-1 glass-panel px-5 py-2 rounded-full border border-white/10 shadow-inner">
+                    <a href="#hero" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cl-glow transition-colors rounded-full hover:bg-white/5">Inicio</a>
+                    <a href="#servicios" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cl-glow transition-colors rounded-full hover:bg-white/5">Servicios</a>
+                    <a href="#productos" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cl-glow transition-colors rounded-full hover:bg-white/5">Productos</a>
+                    <a href="#portafolio" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cl-glow transition-colors rounded-full hover:bg-white/5">Portafolio</a>
+                    <a href="#nosotros" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cl-glow transition-colors rounded-full hover:bg-white/5">Nosotros</a>
+                    <a href="#contacto" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cl-glow transition-colors rounded-full hover:bg-white/5">Contacto</a>
+                </nav>
+
+                <!-- Llamada a la acción para dirigir al formulario de contacto. -->
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="#contacto" 
+                       class="relative group overflow-hidden px-6 py-2.5 rounded-full font-semibold text-xs tracking-wider uppercase transition-all duration-300 shadow-lg shadow-cl-steel/20 border border-cl-glow/30 hover:border-cl-glow">
+                        <span class="absolute inset-0 bg-gradient-to-r from-blue-900 via-cl-card to-cl-accent group-hover:opacity-90 transition-opacity"></span>
+                        <span class="relative z-10 flex items-center gap-2 text-white">
+                            <i data-lucide="headset" class="w-4 h-4 text-cl-glow"></i>
+                            Soporte / Cotizar
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Alterna la navegación móvil y anuncia su estado a tecnologías de asistencia. -->
+                <div class="md:hidden flex items-center">
+                    <button x-ref="mobileMenuButton" @click="mobileMenuOpen = !mobileMenuOpen"
+                            type="button"
+                            :aria-label="mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
+                            :aria-expanded="mobileMenuOpen.toString()"
+                            aria-controls="mobile-navigation"
+                            class="mobile-menu-toggle">
+                        <span x-show="!mobileMenuOpen" class="menu-fallback-icon" aria-hidden="true">
+                            <span></span><span></span><span></span>
+                        </span>
+                        <span x-show="mobileMenuOpen" class="text-2xl leading-none" aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enlaces para móviles; cada selección cierra el panel y devuelve el foco al botón. -->
+        <nav id="mobile-navigation" aria-label="Navegación móvil" class="mobile-navigation"
+             x-show="mobileMenuOpen" x-cloak x-transition>
+            <a href="#hero" @click="closeMobileMenu()">Inicio</a>
+            <a href="#servicios" @click="closeMobileMenu()">Servicios</a>
+            <a href="#productos" @click="closeMobileMenu()">Productos</a>
+            <a href="#portafolio" @click="closeMobileMenu()">Portafolio</a>
+            <a href="#nosotros" @click="closeMobileMenu()">Nosotros</a>
+            <a href="#contacto" @click="closeMobileMenu()" class="mobile-navigation-cta">
+                Soporte & Cotización
+            </a>
+        </nav>
+    </header>
+
+    <!-- Contenido principal: el enlace "Saltar al contenido" enfoca este punto. -->
+    <main id="main-content" tabindex="-1">
+    <!-- Presentación principal de la empresa y acceso directo a servicios y contacto. -->
+    <section id="hero" class="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Columna izquierda: propuesta de valor, especialidades y acciones principales. -->
+                <div class="lg:col-span-7 space-y-8 text-center lg:text-left gsap-hero-left">
+                    
+                    <!-- Distintivo breve de identidad y tipo de servicio. -->
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-cl-glow/30 text-xs sm:text-sm text-slate-200">
+                        <span class="flex h-2.5 w-2.5 rounded-full bg-cl-glow animate-ping"></span>
+                        <span class="font-semibold text-cl-glow tracking-wider uppercase">CL SOLUTIONS</span>
+                        <span class="text-slate-500">|</span>
+                        <span class="text-slate-300">Infraestructura, Desarrollo & IT</span>
+                    </div>
+
+                    <!-- Mensaje principal que presenta la oferta de CL Solutions. -->
+                    <h1 class="font-heading text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
+                        Soluciones en <br class="hidden sm:inline"/>
+                        <span class="gradient-text">Sistemas e Innovación</span> <br/>
+                        para tu Empresa.
+                    </h1>
+
+                    <!-- Texto animado que enumera los servicios de la empresa. -->
+                    <div class="text-lg sm:text-xl text-slate-300 font-normal min-h-[3rem] flex flex-wrap items-center justify-center lg:justify-start">
+                        <span>Servicios como:&nbsp;</span>
+                        <span class="font-bold text-cl-glow underline decoration-cl-steel decoration-2 underline-offset-4 font-mono" x-text="currentTypingText"></span>
+                        <span class="animate-pulse text-white font-bold">|</span>
+                    </div>
+
+                    <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                        Garantizamos la continuidad operativa de tu infraestructura informática, desarrollamos software a la medida e impulsamos la transformación tecnológica con soporte técnico especializado de alto nivel.
+                    </p>
+
+                    <!-- Acciones principales para consultar servicios y solicitar atención. -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                        <a href="#contacto" 
+                           class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cl-card via-cl-accent to-cl-steel text-white font-bold text-sm tracking-wide uppercase shadow-xl shadow-cl-steel/20 hover:shadow-cl-glow/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 border border-cl-glow/40">
+                            <i data-lucide="wrench" class="w-5 h-5 text-cl-glow"></i>
+                            Solicitar Soporte Técnico
+                        </a>
+                        <a href="#servicios" 
+                           class="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-slate-200 font-semibold text-sm hover:bg-white/10 hover:text-white transition-all border border-white/10 flex items-center justify-center gap-2">
+                            Ver Servicios
+                            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+
+                    <!-- Beneficios destacados que resumen el enfoque del servicio. -->
+                    <div class="pt-6 border-t border-slate-800/80">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Pilares de Excelencia Corporativa</p>
+                        <div class="grid grid-cols-3 gap-4 text-center lg:text-left">
+                            <div class="glass-card p-3 rounded-lg border border-white/5">
+                                <div class="text-xs font-bold text-white uppercase tracking-wider">Sistemas</div>
+                                <div class="text-[11px] text-slate-400 mt-1">Desarrollo & ERP</div>
+                            </div>
+                            <div class="glass-card p-3 rounded-lg border border-white/5">
+                                <div class="text-xs font-bold text-cl-glow uppercase tracking-wider">Innovación</div>
+                                <div class="text-[11px] text-slate-400 mt-1">Cloud & IA</div>
+                            </div>
+                            <div class="glass-card p-3 rounded-lg border border-white/5">
+                                <div class="text-xs font-bold text-white uppercase tracking-wider">Soporte</div>
+                                <div class="text-[11px] text-slate-400 mt-1">Atención 24/7</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna derecha: representación visual de servicios y soporte técnico. -->
+                <div class="lg:col-span-5 relative gsap-hero-right">
+                    
+                    <!-- Efecto de luz decorativo detrás de las tarjetas. -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cl-accent rounded-full blur-[90px] opacity-30"></div>
+
+                    <div class="relative space-y-6">
+                        
+                        <!-- Tarjeta ilustrativa del estado de una infraestructura tecnológica. -->
+                        <div class="glass-panel p-6 rounded-2xl border border-white/15 shadow-2xl animate-float-1">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    <span class="text-xs font-mono text-slate-300">CL-SERVER-NODE-01</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
+                                    Sistemas Operativos 100%
+                                </span>
+                            </div>
+
+                            <div class="bg-cl-dark/90 rounded-xl p-4 font-mono text-xs text-slate-300 space-y-2 border border-slate-800">
+                                <div class="text-slate-500">// CL Solutions Health Check</div>
+                                <div><span class="text-cl-glow">status</span>: <span class="text-emerald-400">'OPTIMAL'</span>,</div>
+                                <div><span class="text-cl-glow">supportLevel</span>: <span class="text-sky-300">'PRIORITY_24_7'</span>,</div>
+                                <div><span class="text-cl-glow">securityStandard</span>: <span class="text-sky-300">'FIREWALL_ACTIVE'</span>,</div>
+                                <div><span class="text-cl-glow">networks</span>: [<span class="text-amber-300">'VPN'</span>, <span class="text-amber-300">'CLOUD_BACKUP'</span>]</div>
+                            </div>
+                        </div>
+
+                        <!-- Indicador visual de eficiencia y respuesta. -->
+                        <div class="glass-card p-5 rounded-2xl border border-white/10 shadow-xl animate-float-2 sm:w-4/5 ml-auto">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-cl-steel/20 border border-cl-glow/30 flex items-center justify-center text-cl-glow">
+                                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xl font-bold text-white">+99.9% Disponibilidad</div>
+                                    <div class="text-xs text-slate-400">Protección y Mantenimiento Preventivo</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Indicador visual de mantenimiento y continuidad operativa. -->
+                        <div class="glass-card p-4 rounded-xl border border-white/10 shadow-lg animate-float-3 w-3/4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-cl-glow">
+                                    <i data-lucide="cpu" class="w-5 h-5"></i>
+                                </div>
+                                <span class="text-xs font-medium text-slate-200">Infraestructura & Servidores de Alta Velocidad</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Indicadores destacados de experiencia, continuidad, respuesta y compromiso. -->
+    <section id="nosotros" class="py-16 relative bg-cl-dark/60 border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <div class="glass-card p-6 rounded-2xl text-center border border-white/5">
+                    <div class="text-3xl sm:text-5xl font-extrabold text-white mb-2 font-mono">
+                        <span class="counter-number" data-target="300">0</span>+
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-400 font-medium">Equipos y Servidores Atendidos</div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl text-center border border-white/5">
+                    <div class="text-3xl sm:text-5xl font-extrabold text-cl-glow mb-2 font-mono">
+                        <span class="counter-number" data-target="99">0</span>.9%
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-400 font-medium">Continuidad de Operación Garantizada</div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl text-center border border-white/5">
+                    <div class="text-3xl sm:text-5xl font-extrabold text-white mb-2 font-mono">
+                        <span class="counter-number" data-target="15">0</span>m
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-400 font-medium">Tiempo Medio de Respuesta Inicial</div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl text-center border border-white/5">
+                    <div class="text-3xl sm:text-5xl font-extrabold text-cl-steel mb-2 font-mono">
+                        <span class="counter-number" data-target="100">0</span>%
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-400 font-medium">Compromiso y Seguridad de Datos</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Catálogo de servicios: cada tarjeta describe el alcance y las tareas ofrecidas. -->
+    <section id="servicios" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="px-4 py-1.5 rounded-full glass-card border border-cl-glow/30 text-xs font-semibold text-cl-glow uppercase tracking-wider">
+                    Catálogo de Soluciones
+                </span>
+                <h2 class="font-heading text-3xl sm:text-5xl font-extrabold text-white">
+                    Sistemas, Innovación y <span class="gradient-text">Soporte Integral</span>
+                </h2>
+                <p class="text-slate-400 text-base sm:text-lg">
+                    Ofrecemos servicios informáticos completos diseñados para mantener la tecnología de tu negocio siempre activa y actualizada.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Tarjeta de soporte técnico para equipos y usuarios. -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="headset" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Soporte Técnico Especializado
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Mantenimiento preventivo y correctivo para hardware, ordenadores de oficina, servidores y periféricos corporativos.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Mesas de Ayuda Presencial y Remota</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Diagnóstico Avanzado de Hardware</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Planes de Mantenimiento Periódico</li>
+                    </ul>
+                </div>
+
+                <!-- Tarjeta de desarrollo y configuración de soluciones de software. -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="code-2" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Sistemas & Software a Medida
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Desarrollo de plataformas empresariales, páginas web, portales de gestión, bases de datos y automatización de procesos.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> ERP y CRM para gestión interna</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Páginas Web & Landings de Alta Conversión</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> APIs e Integración de Sistemas</li>
+                    </ul>
+                </div>
+
+                <!-- Servicio: Diseño gráfico -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="palette" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Diseño gráfico, interfaces y multimedia
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Creamos recursos gráficos y multimedia para comunicar tu marca y diseñamos interfaces claras para sitios web y aplicaciones.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Diseño de interfaces para web</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Piezas gráficas para comunicación digital</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Contenido y recursos multimedia</li>
+                    </ul>
+                </div>
+
+                <!-- Servicio: Instalación de redes y cableado -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="cloud-cog" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Instalación de Redes y Cableado
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Instalamos y organizamos redes locales para oficinas, con cableado estructurado y configuración de conexiones Wi-Fi.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Instalación de cableado de red</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Conexión de equipos y puntos de red</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Configuración básica de red Wi-Fi</li>
+                    </ul>
+                </div>
+
+                <!-- Servicio 4: Antivirus -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Instalación de Antivirus
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Instalamos y configuramos soluciones antivirus en computadoras de hogar y oficina para ayudar a proteger tus equipos.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Instalación y configuración inicial</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Actualización de antivirus</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Revisión básica de seguridad del equipo</li>
+                    </ul>
+                </div>
+
+                <!-- Servicio 5: Servidores y Virtualización -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="server" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Administración de Servidores
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Gestión de entornos Windows Server y Linux, Active Directory, servidores de archivos, carpetas compartidas y licencias.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Configuración de Dominio y Usuarios</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Virtualización de Sistemas (VMware / Hyper-V)</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Optimización de Rendimiento</li>
+                    </ul>
+                </div>
+
+                <!-- Servicio 6: Consultoría IT -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="lightbulb" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Consultoría en Innovación IT
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Asesoramiento estratégico para adquisición de equipos, renovación de licencias y migración tecnológica rentable.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Asesoría de Compras de Hardware</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Planes de Reducción de Costes Tecnológicos</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Planes de Recuperación ante Desastres (DRP)</li>
+                    </ul>
+                </div>
+
+                <!-- Servicio 7: Venta de productos ofimáticos -->
+                <div class="glass-card p-8 rounded-2xl border border-white/10 hover:border-cl-glow/50 transition-all group relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cl-glow transition-colors">
+                        Venta de productos ofimáticos
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Encuentra accesorios, periféricos, suministros, licencias y equipos ofimáticos para tu hogar u oficina.
+                    </p>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Accesorios y periféricos</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Suministros y licencias</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-cl-glow"></i> Equipos ofimáticos</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Catálogo de productos que se pueden consultar o cotizar con el equipo comercial. -->
+    <section id="productos" class="py-24 relative bg-cl-dark/40 border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="px-4 py-1.5 rounded-full glass-card border border-cl-glow/30 text-xs font-semibold text-cl-glow uppercase tracking-wider">
+                    Productos
+                </span>
+                <h2 class="font-heading text-3xl sm:text-5xl font-extrabold text-white">
+                    Tecnología y suministros <span class="gradient-text">para tu oficina</span>
+                </h2>
+                <p class="text-slate-400 text-base sm:text-lg">
+                    Te ayudamos a encontrar los productos que necesitas para equipar y mantener tu espacio de trabajo.
+                    Consulta disponibilidad y opciones con nuestro equipo.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <article class="glass-card p-6 rounded-2xl border border-white/10">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-5">
+                        <i data-lucide="mouse" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Accesorios y periféricos</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Complementos para conectar y usar tus equipos de trabajo.</p>
+                </article>
+
+                <article class="glass-card p-6 rounded-2xl border border-white/10">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-5">
+                        <i data-lucide="printer" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Suministros</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Insumos para impresoras y otros dispositivos de oficina.</p>
+                </article>
+
+                <article class="glass-card p-6 rounded-2xl border border-white/10">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-5">
+                        <i data-lucide="key-round" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Licencias</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Licencias de software para las necesidades de tu empresa.</p>
+                </article>
+
+                <article class="glass-card p-6 rounded-2xl border border-white/10">
+                    <div class="w-14 h-14 rounded-xl bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow mb-5">
+                        <i data-lucide="monitor" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Equipos ofimáticos</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Equipos para el trabajo diario en tu hogar u oficina.</p>
+                </article>
+            </div>
+
+            <div class="products-cta text-center">
+                <a href="#contacto" class="btn-corporate inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-sm">
+                    Consultar productos
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Casos de portafolio, filtrables por categoría y ampliables en un modal de detalles. -->
+    <section id="portafolio" class="py-24 relative bg-cl-dark/40 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div>
+                    <span class="px-4 py-1.5 rounded-full glass-card border border-cl-glow/30 text-xs font-semibold text-cl-glow uppercase tracking-wider">
+                        Casos Reales
+                    </span>
+                    <h2 class="font-heading text-3xl sm:text-5xl font-extrabold text-white mt-3">
+                        Proyectos e Innovación
+                    </h2>
+                </div>
+
+                <!-- Filtros del Portafolio -->
+                <div role="group" aria-label="Filtrar proyectos" class="flex flex-wrap gap-2 glass-panel p-1.5 rounded-2xl border border-white/10">
+                    <button type="button" @click="activeFilter = 'all'"
+                            :aria-pressed="(activeFilter === 'all').toString()"
+                            class="portfolio-filter px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all">
+                        Todos
+                    </button>
+                    <button type="button" @click="activeFilter = 'sistemas'"
+                            :aria-pressed="(activeFilter === 'sistemas').toString()"
+                            class="portfolio-filter px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all">
+                        Sistemas
+                    </button>
+                    <button type="button" @click="activeFilter = 'soporte'"
+                            :aria-pressed="(activeFilter === 'soporte').toString()"
+                            class="portfolio-filter px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all">
+                        Soporte & Redes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cuadrícula de proyectos; Alpine genera las tarjetas según el filtro activo. -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <template x-for="project in filteredProjects" :key="project.id">
+                    <div class="glass-card rounded-2xl overflow-hidden border border-white/10 hover:border-cl-glow/50 transition-all duration-300 group flex flex-col h-full"
+                         x-show="activeFilter === 'all' || activeFilter === project.category">
+                        
+                        <!-- Área superior de la tarjeta: imagen opcional o icono representativo. -->
+                        <div class="relative h-52 overflow-hidden bg-cl-dark flex items-center justify-center p-6 border-b border-white/5">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-cl-dark via-cl-card to-cl-bg opacity-80"></div>
+                            <img x-show="project.image" :src="project.image" :alt="project.title" class="project-image absolute inset-0 z-10">
+
+                            <!-- Imagen opcional; se muestra el icono hasta agregar una ruta en project.image. -->
+                            <div x-show="!project.image" class="relative z-10 w-20 h-20 rounded-2xl bg-cl-bg/80 border border-cl-glow/30 flex items-center justify-center text-cl-glow shadow-xl group-hover:scale-110 transition-transform">
+                                <i :data-lucide="project.icon" class="w-10 h-10 text-cl-glow"></i>
+                            </div>
+
+                            <div class="absolute top-4 right-4 z-20">
+                                <span class="px-3 py-1 rounded-full bg-cl-dark/90 border border-cl-glow/30 text-[10px] font-semibold text-cl-glow uppercase tracking-wider" x-text="project.categoryLabel"></span>
+                            </div>
+                        </div>
+
+                        <!-- Descripción, tecnologías relacionadas y acceso al detalle del proyecto. -->
+                        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-white group-hover:text-cl-glow transition-colors" x-text="project.title"></h3>
+                                <p class="text-slate-400 text-xs mt-2 leading-relaxed" x-text="project.description"></p>
+                            </div>
+
+                            <!-- Tecnologías o herramientas asociadas al proyecto. -->
+                            <div class="flex flex-wrap gap-1.5 pt-2">
+                                <template x-for="tech in project.techStack" :key="tech">
+                                    <span class="px-2 py-0.5 rounded bg-cl-dark text-[10px] font-mono text-slate-300 border border-slate-800" x-text="tech"></span>
+                                </template>
+                            </div>
+
+                            <!-- Abre la ventana modal con la descripción completa del proyecto. -->
+                            <button @click="openProjectModal(project)" aria-haspopup="dialog"
+                                    :aria-label="'Ver detalles del proyecto: ' + project.title"
+                                    class="w-full py-2.5 rounded-xl glass-panel hover:bg-cl-accent/40 text-xs font-semibold text-white transition-all border border-white/10 flex items-center justify-center gap-2 mt-4">
+                                Ver Detalles del Proyecto
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Opiniones de clientes presentadas en un carrusel adaptable a distintos tamaños. -->
+    <section class="py-24 relative bg-cl-dark/60 border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="px-4 py-1.5 rounded-full glass-card border border-cl-glow/30 text-xs font-semibold text-cl-glow uppercase tracking-wider">
+                    Confianza Comprobada
+                </span>
+                <h2 class="font-heading text-3xl sm:text-5xl font-extrabold text-white mt-3">
+                    Lo que Dicen Nuestros Clientes
+                </h2>
+            </div>
+
+            <!-- Carrusel de opiniones con controles adaptables a dispositivos móviles. -->
+            <div class="swiper testimonialsSwiper pb-14">
+                <div class="swiper-wrapper">
+                    
+                    <div class="swiper-slide h-auto">
+                        <div class="glass-card p-8 rounded-2xl border border-white/10 h-full flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <div class="flex text-amber-400 gap-1">
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                </div>
+                                <p class="text-slate-300 text-xs leading-relaxed italic">
+                                    "El equipo de CL SOLUTIONS solucionó una caída crítica en nuestro servidor principal en tiempo récord. El soporte técnico preventivo que nos brindan actualmente nos da total tranquilidad."
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-3 pt-6 mt-6 border-t border-slate-800">
+                                <div class="w-10 h-10 rounded-full bg-cl-accent flex items-center justify-center text-white font-bold text-xs">
+                                    RG
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">Roberto Gómez</div>
+                                    <div class="text-[11px] text-slate-400">Director de Operaciones</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="swiper-slide h-auto">
+                        <div class="glass-card p-8 rounded-2xl border border-white/10 h-full flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <div class="flex text-amber-400 gap-1">
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                </div>
+                                <p class="text-slate-300 text-xs leading-relaxed italic">
+                                    "Desarrollaron el sistema interno de gestión para nuestra empresa con una velocidad y calidad impecables. La transición fue suave y la capacitación a nuestro personal excelente."
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-3 pt-6 mt-6 border-t border-slate-800">
+                                <div class="w-10 h-10 rounded-full bg-cl-steel flex items-center justify-center text-white font-bold text-xs">
+                                    MA
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">María Álvarez</div>
+                                    <div class="text-[11px] text-slate-400">Gerente General</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="swiper-slide h-auto">
+                        <div class="glass-card p-8 rounded-2xl border border-white/10 h-full flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <div class="flex text-amber-400 gap-1">
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                                </div>
+                                <p class="text-slate-300 text-xs leading-relaxed italic">
+                                    "Implementaron el cableado estructurado de red y la red Wi-Fi corporativa en nuestras oficinas. Cero caídas y el rendimiento de la red mejoró notablemente."
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-3 pt-6 mt-6 border-t border-slate-800">
+                                <div class="w-10 h-10 rounded-full bg-cl-accent flex items-center justify-center text-white font-bold text-xs">
+                                    JPC
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">Juan Pablo Castro</div>
+                                    <div class="text-[11px] text-slate-400">Jefe de Infraestructura</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Datos de contacto y formulario de solicitud con selección del servicio requerido. -->
+    <section id="contacto" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-12 items-start">
+                
+                <!-- Columna con canales de contacto y cobertura del servicio. -->
+                <div class="lg:col-span-5 space-y-8">
+                    <div>
+                        <span class="px-4 py-1.5 rounded-full glass-card border border-cl-glow/30 text-xs font-semibold text-cl-glow uppercase tracking-wider">
+                            Atención Inmediata
+                        </span>
+                        <h2 class="font-heading text-3xl sm:text-5xl font-extrabold text-white mt-3 leading-tight">
+                            Contáctanos Hoy Mismo
+                        </h2>
+                        <p class="text-slate-400 text-sm mt-4 leading-relaxed">
+                            ¿Necesitas soporte técnico rápido o quieres cotizar un nuevo proyecto de sistemas? Escríbenos y nuestro equipo te responderá en breve.
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="glass-card p-4 rounded-xl flex items-center gap-4 border border-white/10">
+                            <div class="w-12 h-12 rounded-lg bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow">
+                                <i data-lucide="mail" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-400">Correo Electrónico</div>
+                                <div class="text-sm font-bold text-white">clsolutions05@gmail.com</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-4 rounded-xl flex items-center gap-4 border border-white/10">
+                            <div class="w-12 h-12 rounded-lg bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow">
+                                <i data-lucide="phone-call" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-400">Línea Directa / WhatsApp</div>
+                                <div class="text-sm font-bold text-white">+57 301 785 3152</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-4 rounded-xl flex items-center gap-4 border border-white/10">
+                            <div class="w-12 h-12 rounded-lg bg-cl-accent/30 border border-cl-glow/30 flex items-center justify-center text-cl-glow">
+                                <i data-lucide="map-pin" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-400">Cobertura de Servicio</div>
+                                <div class="text-sm font-bold text-white">Atención Presencial & Remota</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario Interactivo -->
+                <div class="lg:col-span-7">
+                    <form @submit.prevent="submitContactForm()" aria-label="Formulario de contacto" class="glass-panel p-8 sm:p-10 rounded-3xl border border-white/15 shadow-2xl space-y-6">
+                        
+                        <div class="grid sm:grid-cols-2 gap-6">
+                            <div>
+                                <label for="contact-name" class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Nombre Completo *</label>
+                                <input id="contact-name" name="name" type="text" autocomplete="name" x-model="contactForm.name" required 
+                                       placeholder="Ej. Carlos López" 
+                                       class="w-full px-4 py-3.5 rounded-xl bg-cl-dark border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cl-glow transition-all text-sm">
+                            </div>
+
+                            <div>
+                                <label for="contact-email" class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Empresa / Email *</label>
+                                <input id="contact-email" name="email" type="email" autocomplete="email" x-model="contactForm.email" required 
+                                       placeholder="carlos@empresa.com" 
+                                       class="w-full px-4 py-3.5 rounded-xl bg-cl-dark border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cl-glow transition-all text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Selección del servicio que el visitante desea consultar. -->
+                        <fieldset class="min-w-0 border-0 p-0">
+                            <legend class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Servicio que Necesitas</legend>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                <template x-for="serviceOption in serviceOptions" :key="serviceOption">
+                                    <button type="button" 
+                                            @click="contactForm.service = serviceOption"
+                                            :aria-pressed="(contactForm.service === serviceOption).toString()"
+                                            :class="contactForm.service === serviceOption ? 'bg-cl-accent text-white border-cl-glow' : 'bg-cl-dark text-slate-400 border-slate-800 hover:text-white'"
+                                            class="px-3 py-2.5 rounded-xl border text-xs font-medium transition-all text-center">
+                                        <span x-text="serviceOption"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </fieldset>
+
+                        <!-- Campo para describir la necesidad o solicitud. -->
+                        <div>
+                            <label for="contact-message" class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Detalles del Requerimiento *</label>
+                            <textarea id="contact-message" name="message" x-model="contactForm.message" required rows="4" 
+                                      placeholder="Descríbenos tu necesidad técnica, falla a reparar o proyecto a desarrollar..." 
+                                      class="w-full px-4 py-3.5 rounded-xl bg-cl-dark border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cl-glow transition-all text-sm resize-none"></textarea>
+                        </div>
+
+                        <!-- Abre WhatsApp con los datos ingresados para que el visitante envíe su solicitud. -->
+                        <button type="submit"
+                                class="contact-submit w-full py-4 rounded-xl bg-gradient-to-r from-cl-card via-cl-accent to-cl-steel text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-cl-steel/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 border border-cl-glow/30">
+                            <span class="flex items-center gap-2" aria-live="polite">
+                                Enviar Mensaje
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </span>
+                        </button>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    </main>
+
+    <!-- Herramientas flotantes: tema, escala de texto, lectura en voz alta y restauración. -->
+    <aside class="accessibility-tools" aria-label="Herramientas de accesibilidad">
+        <div class="accessibility-panel" id="accessibility-panel" x-show="accessibilityMenuOpen" x-cloak
+             x-transition>
+            <h2 id="accessibility-title">Accesibilidad</h2>
+            <div class="space-y-2">
+                <button type="button" class="accessibility-action"
+                        @click="lightMode = !lightMode"
+                        :aria-pressed="lightMode.toString()">
+                    <span x-text="lightMode ? 'Activar modo oscuro' : 'Activar modo claro'"></span>
+                </button>
+                <div class="space-y-2">
+                    <label for="accessibility-font-size" class="block text-sm font-semibold text-white">
+                        Tamaño de letra: <output for="accessibility-font-size" x-text="Math.round(fontScale * 100) + '%'"></output>
+                    </label>
+                    <input id="accessibility-font-size" class="w-full" type="range"
+                           min="0.75" max="1.5" step="0.05" x-model.number="fontScale"
+                           @input="applyFontScale()"
+                           aria-label="Tamaño del texto de la página, de 75 a 150 por ciento">
+                    <div class="flex justify-between text-xs text-slate-300" aria-hidden="true">
+                        <span>Más pequeño</span>
+                        <span>Más grande</span>
+                    </div>
+                </div>
+                <button type="button" class="accessibility-action" @click="togglePageReading()"
+                        :aria-pressed="isReading.toString()">
+                    <span x-text="isReading ? 'Detener lectura' : 'Leer página en voz alta'"></span>
+                </button>
+                <button type="button" class="accessibility-action" @click="restoreAccessibilitySettings()">
+                    Restaurar ajustes
+                </button>
+            </div>
+            <p class="accessibility-status" x-show="accessibilityMessage" x-text="accessibilityMessage" aria-live="polite"></p>
+        </div>
+        <button type="button" class="accessibility-trigger"
+                @click="accessibilityMenuOpen = !accessibilityMenuOpen"
+                :aria-expanded="accessibilityMenuOpen.toString()"
+                aria-controls="accessibility-panel"
+                :aria-label="accessibilityMenuOpen ? 'Cerrar opciones de accesibilidad' : 'Abrir opciones de accesibilidad'"
+                title="Accesibilidad">
+            <span class="text-xl" aria-hidden="true">♿</span>
+        </button>
+    </aside>
+
+    <!-- Pie de página con accesos rápidos, servicios, datos de empresa y derechos. -->
+    <footer class="site-footer bg-cl-dark border-t border-white/10 pt-16 pb-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                
+                <!-- Primera columna: marca y breve descripción de la empresa. -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <img src="logo-cl-solutions.png" alt="Logo CL SOLUTIONS" class="w-14 h-auto object-contain rounded-md" style="background:#102A43;">
+                    </div>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        SISTEMAS • INNOVACIÓN • SOPORTE TÉCNICO <br/>
+                        Soluciones integrales de ingeniería informática y mantenimiento para empresas.
+                    </p>
+                </div>
+
+                <!-- Segunda columna: enlaces a las secciones principales. -->
+                <div class="footer-services">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Servicios</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#servicios" class="hover:text-cl-glow transition-colors">Soporte Técnico</a></li>
+                        <li><a href="#servicios" class="hover:text-cl-glow transition-colors">Desarrollo de Sistemas</a></li>
+                        <li><a href="#servicios" class="hover:text-cl-glow transition-colors">Instalación de redes y cableado</a></li>
+                        <li><a href="#servicios" class="hover:text-cl-glow transition-colors">Instalación de antivirus</a></li>
+                        <li><a href="#productos" class="hover:text-cl-glow transition-colors">Productos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Tercera columna: resumen de servicios disponibles. -->
+                <div>
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Empresa</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#hero" class="hover:text-cl-glow transition-colors">Inicio</a></li>
+                        <li><a href="#nosotros" class="hover:text-cl-glow transition-colors">Nosotros</a></li>
+                        <li><a href="#portafolio" class="hover:text-cl-glow transition-colors">Portafolio</a></li>
+                        <li><a href="#contacto" class="hover:text-cl-glow transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <!-- Cuarta columna: horario y canales de atención. -->
+                <div>
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Horarios de Atención</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Lunes a Viernes: 8:00 AM - 6:00 PM <br/>
+                        Sábados: 8:00 AM - 1:00 PM <br/>
+                        <span class="text-cl-glow font-semibold">Soporte de Emergencia: 24/7</span>
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="pt-8 border-t border-slate-800/80 text-center text-xs text-slate-500">
+                © 2026 CL SOLUTIONS. Todos los derechos reservados. | Sistemas • Innovación • Soporte Técnico
+            </div>
+        </div>
+    </footer>
+
+    <!-- Diálogo accesible para consultar la información completa de un proyecto. -->
+    <div x-show="projectModalOpen"
+         @click.self="closeProjectModal()"
+         x-transition
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md"
+         x-cloak>
+        
+        <div x-ref="projectDialog" role="dialog" aria-modal="true" aria-labelledby="project-modal-title" aria-describedby="project-modal-description"
+             tabindex="-1" @keydown="handleProjectModalKeydown($event)"
+             class="glass-panel w-full max-w-xl rounded-3xl border border-white/15 overflow-hidden shadow-2xl relative p-8 max-h-[90vh] overflow-y-auto space-y-6">
+            
+            <template x-if="selectedProject">
+                <div class="space-y-5">
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="px-3 py-1 rounded-full bg-cl-accent/40 text-cl-glow text-[10px] font-semibold uppercase tracking-wider" x-text="selectedProject.categoryLabel"></span>
+                        <button @click="closeProjectModal()" type="button" class="modal-close" aria-label="Cerrar detalles del proyecto">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <h3 id="project-modal-title" class="text-2xl font-bold text-white" x-text="selectedProject.title"></h3>
+
+                    <p id="project-modal-description" class="text-slate-300 text-xs leading-relaxed" x-text="selectedProject.fullDescription"></p>
+
+                    <div>
+                        <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tecnologías e Herramientas Aplicadas</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="tech in selectedProject.techStack" :key="tech">
+                                <span class="px-3 py-1 rounded-lg bg-cl-dark border border-slate-700 text-xs text-slate-200 font-mono" x-text="tech"></span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button @click="closeProjectModal(); window.location.href='#contacto';" 
+                                class="w-full py-3 rounded-xl bg-cl-accent hover:bg-cl-steel text-white text-xs font-bold tracking-wider uppercase transition-colors text-center">
+                            Consultar Proyecto Similar
+                        </button>
+                    </div>
+
+                </div>
+            </template>
+
+        </div>
+    </div>
+
+    <!-- LÓGICA ALPINE JS & GSAP -->
+    <script>
+        // Estado compartido de la página: Alpine lo vincula con los atributos x-data y x- de la interfaz.
+        function appState() {
+            return {
+                // Estados de navegación, accesibilidad, filtros y ventanas modales.
+                scrolled: false,
+                mobileMenuOpen: false,
+                accessibilityMenuOpen: false,
+                lightMode: false,
+                fontScale: 1,
+                isReading: false,
+                accessibilityMessage: '',
+                projectModalOpen: false,
+                selectedProject: null,
+                modalReturnFocus: null,
+                activeFilter: 'all',
+
+                // Palabras que se alternan en el mensaje animado del hero.
+                typingWords: [
+                    'Soporte técnico',
+                    'Mantenimientos preventivos y correctivos',
+                    'Diseño gráfico (interfaces y multimedia)',
+                    'Venta e instalación de suministros y dispositivos ofimáticos',
+                    'Creación de páginas web',
+                    'Instalación de redes y cableado',
+                    'Instalación de antivirus',
+                    'Administración de servidores',
+                    'Consultoría tecnológica',
+                    'Entre otros servicios'
+                ],
+                currentWordIndex: 0,
+                currentTypingText: '',
+                isDeleting: false,
+
+                // Valores que el visitante ingresa o selecciona en el formulario de contacto.
+                contactForm: {
+                    name: '',
+                    email: '',
+                    service: 'Soporte Técnico',
+                    message: ''
+                },
+
+                // Opciones que se muestran como botones para clasificar la solicitud del visitante.
+                serviceOptions: [
+                    'Soporte Técnico',
+                    'Mantenimientos preventivos y correctivos',
+                    'Diseño gráfico (interfaces y multimedia)',
+                    'Creación de páginas web',
+                    'Instalación de redes y cableado',
+                    'Instalación de antivirus',
+                    'Venta de accesorios, periféricos, suministros, licencias y equipos ofimáticos',
+                    'Administración de servidores',
+                    'Consultoría tecnológica'
+                ],
+
+                // Datos de cada proyecto: imagen es opcional; si queda vacía se muestra el icono indicado.
+                projects: [
+                    {
+                        id: 1,
+                        title: 'Sistema ERP de Inventario y Facturación',
+                        category: 'sistemas',
+                        categoryLabel: 'Sistemas',
+                        image: '',
+                        description: 'Desarrollo e implementación de sistema centralizado para control de stock y ventas.',
+                        fullDescription: 'Plataforma a medida para la gestión de compras, proveedores, facturación electrónica y reporte de ventas en tiempo real.',
+                        techStack: ['Node.js', 'PostgreSQL', 'Tailwind', 'Docker'],
+                        icon: 'database'
+                    },
+                    {
+                        id: 2,
+                        title: 'Red Corporativa y Servidores Windows',
+                        category: 'soporte',
+                        categoryLabel: 'Soporte & Redes',
+                        image: '',
+                        description: 'Instalación de cableado de red, Active Directory y servidor de archivos seguro.',
+                        fullDescription: 'Configuración completa de infraestructura informática para sede corporativa con 40+ puestos de trabajo y permisos jerárquicos.',
+                        techStack: ['Windows Server', 'Active Directory', 'MikroTik', 'VPN'],
+                        icon: 'network'
+                    },
+                    {
+                        id: 4,
+                        title: 'Mesa de Ayuda & Mantenimiento Preventivo',
+                        category: 'soporte',
+                        categoryLabel: 'Soporte & Redes',
+                        image: '',
+                        description: 'Plan de soporte contratado para parque informático de 80 equipos.',
+                        fullDescription: 'Atención presencial y remota ilimitada con tiempos de atención prioritarios y limpieza física/lógica semestral.',
+                        techStack: ['AnyDesk', 'Helpdesk ITIL', 'Antivirus EDR'],
+                        icon: 'headset'
+                    },
+                    {
+                        id: 5,
+                        title: 'Portal Web Corporativo & Catálogo',
+                        category: 'sistemas',
+                        categoryLabel: 'Sistemas',
+                        image: '',
+                        description: 'Diseño e integración de sitio web responsivo de alta velocidad.',
+                        fullDescription: 'Desarrollo optimizado para móviles con formulario interactivo y catálogo de productos para captación de clientes.',
+                        techStack: ['HTML5', 'Tailwind CSS', 'JavaScript', 'Alpine.js'],
+                        icon: 'layout'
+                    },
+                    {
+                        id: 6,
+                        title: 'Instalación de Antivirus',
+                        category: 'soporte',
+                        categoryLabel: 'Soporte Técnico',
+                        image: '',
+                        description: 'Instalación y configuración inicial de antivirus en equipos de oficina.',
+                        fullDescription: 'Configuración de antivirus, actualización de sus definiciones y revisión básica del equipo.',
+                        techStack: ['Antivirus', 'Configuración', 'Actualizaciones'],
+                        icon: 'shield'
+                    }
+                ],
+
+                // Devuelve todos los proyectos o solo los que coinciden con el filtro seleccionado.
+                get filteredProjects() {
+                    if (this.activeFilter === 'all') return this.projects;
+                    return this.projects.filter(p => p.category === this.activeFilter);
+                },
+
+                // Abre el detalle, guarda dónde estaba el foco y lo mueve al diálogo.
+                openProjectModal(project) {
+                    this.modalReturnFocus = document.activeElement;
+                    this.selectedProject = project;
+                    this.projectModalOpen = true;
+                    this.$nextTick(() => {
+                        this.applyFontScale();
+                        if (this.$refs.projectDialog) this.$refs.projectDialog.focus();
+                    });
+                },
+
+                // Cierra el detalle y devuelve el foco al control que lo abrió.
+                closeProjectModal() {
+                    this.projectModalOpen = false;
+                    this.restoreModalFocus();
+                },
+
+                // Cierra el menú móvil después de navegar y devuelve el foco al botón hamburguesa.
+                closeMobileMenu() {
+                    this.mobileMenuOpen = false;
+                    this.$nextTick(() => {
+                        if (this.$refs.mobileMenuButton) this.$refs.mobileMenuButton.focus();
+                    });
+                },
+
+                // Lee el contenido principal con la voz del navegador; al volver a pulsar, detiene la lectura.
+                togglePageReading() {
+                    if (this.isReading) {
+                        this.stopPageReading();
+                        return;
+                    }
+
+                    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+                        this.accessibilityMessage = 'La lectura en voz alta no está disponible en este navegador.';
+                        return;
+                    }
+
+                    const mainContent = document.getElementById('main-content');
+                    const pageText = mainContent ? mainContent.innerText.replace(/\s+/g, ' ').trim() : '';
+                    if (!pageText) {
+                        this.accessibilityMessage = 'No se encontró contenido para leer.';
+                        return;
+                    }
+
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(pageText);
+                    utterance.lang = document.documentElement.lang || 'es';
+                    utterance.rate = 0.95;
+                    utterance.onend = () => {
+                        if (this.isReading) {
+                            this.isReading = false;
+                            this.accessibilityMessage = 'Lectura finalizada.';
+                        }
+                    };
+                    utterance.onerror = () => {
+                        if (this.isReading) {
+                            this.isReading = false;
+                            this.accessibilityMessage = 'No fue posible completar la lectura en voz alta.';
+                        }
+                    };
+
+                    this.accessibilityMessage = '';
+                    this.isReading = true;
+                    window.speechSynthesis.speak(utterance);
+                },
+
+                // Cancela la síntesis de voz y anuncia que la lectura se detuvo.
+                stopPageReading() {
+                    this.isReading = false;
+                    if (window.speechSynthesis) window.speechSynthesis.cancel();
+                    this.accessibilityMessage = 'Lectura detenida.';
+                },
+
+                // Restablece el tema oscuro, el tamaño normal y detiene cualquier lectura en curso.
+                restoreAccessibilitySettings() {
+                    this.stopPageReading();
+                    this.lightMode = false;
+                    this.fontScale = 1;
+                    this.applyFontScale();
+                    this.accessibilityMessage = 'Ajustes de accesibilidad restaurados.';
+                },
+
+                // Escala los textos de la página sin cambiar el tamaño de iconos ni imágenes.
+                // Guarda el tamaño original de cada elemento para poder restaurarlo con precisión.
+                applyFontScale() {
+                    const elements = document.querySelectorAll('body *');
+                    elements.forEach(element => {
+                        if (element.closest('.accessibility-tools') ||
+                            ['SCRIPT', 'STYLE', 'SVG', 'PATH'].includes(element.tagName) ||
+                            element.getAttribute('aria-hidden') === 'true') return;
+
+                        const hasDirectText = Array.from(element.childNodes).some(node =>
+                            node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                        );
+                        if (!hasDirectText) return;
+
+                        if (!element.dataset.accessibilityOriginalFontSize) {
+                            element.dataset.accessibilityOriginalFontSize = getComputedStyle(element).fontSize;
+                        }
+
+                        if (this.fontScale === 1) {
+                            element.style.removeProperty('font-size');
+                            delete element.dataset.accessibilityOriginalFontSize;
+                            return;
+                        }
+
+                        const baseSize = parseFloat(element.dataset.accessibilityOriginalFontSize);
+                        element.style.fontSize = `${baseSize * this.fontScale}px`;
+                    });
+                },
+
+                // Devuelve el foco al control que abrió un modal, si todavía existe en la página.
+                restoreModalFocus() {
+                    const element = this.modalReturnFocus;
+                    this.modalReturnFocus = null;
+                    this.$nextTick(() => {
+                        if (element && element.isConnected) element.focus();
+                    });
+                },
+
+                // Adaptadores de teclado para que cada modal pueda cerrarse con Escape y limitar Tab.
+                handleProjectModalKeydown(event) {
+                    this.handleDialogKeydown(event, this.$refs.projectDialog, () => this.closeProjectModal());
+                },
+
+                // Mantiene el foco dentro del diálogo y ofrece cierre por teclado con Escape.
+                handleDialogKeydown(event, dialog, closeDialog) {
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        closeDialog();
+                        return;
+                    }
+
+                    if (event.key !== 'Tab' || !dialog) return;
+
+                    const focusableElements = dialog.querySelectorAll(
+                        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                    );
+                    const firstElement = focusableElements[0];
+                    const lastElement = focusableElements[focusableElements.length - 1];
+
+                    if (!firstElement) {
+                        event.preventDefault();
+                    } else if (event.shiftKey && (document.activeElement === firstElement || document.activeElement === dialog)) {
+                        event.preventDefault();
+                        lastElement.focus();
+                    } else if (!event.shiftKey && (document.activeElement === lastElement || document.activeElement === dialog)) {
+                        event.preventDefault();
+                        firstElement.focus();
+                    }
+                },
+
+                // Prepara la solicitud con los datos del formulario y la abre en WhatsApp Business.
+                submitContactForm() {
+                    const phoneNumber = '573017853152';
+                    const message = [
+                        'Hola, CL Solutions. Quiero realizar una consulta.',
+                        '',
+                        `Nombre: ${this.contactForm.name.trim()}`,
+                        `Correo electrónico: ${this.contactForm.email.trim()}`,
+                        `Servicio solicitado: ${this.contactForm.service}`,
+                        `Detalles: ${this.contactForm.message.trim()}`
+                    ].join('\n');
+                    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+                    window.location.assign(whatsappUrl);
+                },
+
+                // Escribe y borra progresivamente cada especialidad del hero antes de pasar a la siguiente.
+                initTypingEffect() {
+                    const fullText = this.typingWords[this.currentWordIndex];
+
+                    if (!this.isDeleting && this.currentTypingText === fullText) {
+                        setTimeout(() => {
+                            this.isDeleting = true;
+                            this.initTypingEffect();
+                        }, 2200);
+                        return;
+                    }
+
+                    if (this.isDeleting && this.currentTypingText === '') {
+                        this.isDeleting = false;
+                        this.currentWordIndex = (this.currentWordIndex + 1) % this.typingWords.length;
+                        setTimeout(() => this.initTypingEffect(), 250);
+                        return;
+                    }
+
+                    if (this.isDeleting) {
+                        this.currentTypingText = fullText.substring(0, this.currentTypingText.length - 1);
+                    } else {
+                        this.currentTypingText = fullText.substring(0, this.currentTypingText.length + 1);
+                    }
+
+                    setTimeout(() => this.initTypingEffect(), this.isDeleting ? 35 : 55);
+                },
+
+                // Inicializa el estado del encabezado, respeta movimiento reducido e inicia iconos y texto.
+                init() {
+                    window.addEventListener('scroll', () => {
+                        this.scrolled = window.scrollY > 30;
+                    });
+
+                    const prefersReducedMotion = window.matchMedia &&
+                        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    if (prefersReducedMotion) {
+                        this.currentTypingText = this.typingWords[0];
+                    } else {
+                        this.initTypingEffect();
+                    }
+
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                }
+            }
+        }
+
+        // Preparación al cargar el documento: iconos, animaciones, contadores y carrusel de testimonios.
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) lucide.createIcons();
+
+            // Detecta la preferencia del sistema para evitar movimiento cuando el visitante lo solicita.
+            const counterElements = document.querySelectorAll('.counter-number');
+            const prefersReducedMotion = window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
+                // Anima las columnas del hero y cuenta las métricas cuando entran en la pantalla.
+                gsap.registerPlugin(ScrollTrigger);
+                gsap.from(".gsap-hero-left", {
+                    duration: 1,
+                    y: 30,
+                    opacity: 0,
+                    ease: "power2.out"
+                });
+                gsap.from(".gsap-hero-right", {
+                    duration: 1,
+                    x: 30,
+                    opacity: 0,
+                    delay: 0.2,
+                    ease: "power2.out"
+                });
+                counterElements.forEach(el => {
+                    const targetValue = parseInt(el.getAttribute('data-target'), 10);
+                    gsap.to(el, {
+                        innerText: targetValue,
+                        duration: 2,
+                        snap: { innerText: 1 },
+                        scrollTrigger: {
+                            trigger: el,
+                            start: "top 85%"
+                        }
+                    });
+                });
+            } else {
+                // Si no hay animaciones o el usuario las reduce, muestra directamente los valores finales.
+                counterElements.forEach(el => {
+                    el.textContent = el.getAttribute('data-target') || '0';
+                });
+            }
+
+            if (typeof Swiper !== 'undefined') {
+                // Ajusta la cantidad de testimonios visibles al ancho del dispositivo.
+                new Swiper('.testimonialsSwiper', {
+                    slidesPerView: 1,
+                    spaceBetween: 24,
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    breakpoints: {
+                        640: { slidesPerView: 2 },
+                        1024: { slidesPerView: 3 },
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
